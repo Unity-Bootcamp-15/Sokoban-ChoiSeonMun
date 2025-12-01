@@ -4,6 +4,15 @@ namespace Sokoban
 {
     internal class Program
     {
+        enum Direction
+        {
+            None,
+            Left,
+            Right,
+            Up,
+            Down
+        }
+
         static void Main(string[] args)
         {
             // ----------- 초기화 -------------
@@ -21,9 +30,12 @@ namespace Sokoban
             int mapSizeMaxX = 10;
             int mapSizeMaxY = 10;
 
+            // 플레이어 데이터
             int playerX = 5;
             int playerY = 10;
+            Direction playerDirection = Direction.None;
 
+            // 벽 데이터
             int wallX = 3;
             int wallY = 3;
             
@@ -47,23 +59,65 @@ namespace Sokoban
                 ConsoleKeyInfo keyInfo = Console.ReadKey();
 
                 // ------------ Update -----------
-                // 플레이어 이동 처리
+                // 키 입력에 따라 방향 처리
                 if (keyInfo.Key == ConsoleKey.DownArrow)
                 {
-                    playerY = Math.Min(mapSizeMaxY, playerY + 1);
+                    playerDirection = Direction.Down;
                 }
                 else if (keyInfo.Key == ConsoleKey.UpArrow)
                 {
-                    playerY = Math.Max(mapSizeMinY, playerY - 1);
+                    playerDirection = Direction.Up;
                 }
                 else if (keyInfo.Key == ConsoleKey.LeftArrow)
                 {
-                    playerX = Math.Max(mapSizeMinX, playerX - 1);
+                    playerDirection = Direction.Left;
                 }
                 else if (keyInfo.Key == ConsoleKey.RightArrow)
                 {
-                    playerX = Math.Min(mapSizeMaxX, playerX + 1);
+                    playerDirection = Direction.Right;
                 }
+
+                // 플레이어 이동 처리
+                int newPlayerX = playerX;
+                int newPlayerY = playerY;
+                switch (playerDirection)
+                {
+                    case Direction.Left:
+                        newPlayerX = Math.Max(mapSizeMinX, playerX - 1);
+                        break;
+                    case Direction.Right:
+                        newPlayerX = Math.Min(mapSizeMaxX, playerX + 1);
+                        break;
+                    case Direction.Up:
+                        newPlayerY = Math.Max(mapSizeMinY, playerY - 1);
+                        break;
+                    case Direction.Down:
+                        newPlayerY = Math.Min(mapSizeMaxY, playerY + 1);
+                        break;
+                    default:
+                        // Log를 이용한 오류 처리
+                        // ㄴ 오류를 처리하기 위해서 필요한 문맥: 실제 값. 발생한 위치. 오류 메시지
+                        Console.Clear();
+                        Console.WriteLine($"[Error] at 플레이어 이동 처리: 잘못된 방향입니다. {playerDirection}");
+                        return;
+                }
+
+                // 플레이어와 벽의 충돌 처리
+                // 1. 플레이어와 벽이 충돌했는지 감지한다. => (플레이어 좌표) == (벽 좌표)
+                bool isSamePlayerXAndWallX = newPlayerX == wallX;
+                bool isSamePlayerYAndWallY = newPlayerY == wallY;
+                bool isCollidedPlayerWithWall = isSamePlayerXAndWallX && isSamePlayerYAndWallY;
+
+                // 2. 충돌했다면 위치를 다시 되돌린다.
+                if (isCollidedPlayerWithWall)
+                {
+                    // 움직임을 반영하지 않는다.
+                    continue;
+                }
+
+                // 플레이어의 좌표를 갱신한다.
+                playerX = newPlayerX;
+                playerY = newPlayerY;
             }
         }
     }
