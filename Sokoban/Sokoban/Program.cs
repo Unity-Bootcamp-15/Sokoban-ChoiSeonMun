@@ -39,8 +39,9 @@ namespace Sokoban
             Direction playerDirection = Direction.None;
 
             // 벽 데이터
-            int wallX = 3;
-            int wallY = 3;
+            int[] wallX = { 3, 4, 5, 6, 7 };
+            int[] wallY = { 3, 3, 3, 3, 3 };
+            int wallCount = wallX.Length;
 
             // 박스 데이터
             int boxX = 6;
@@ -66,9 +67,12 @@ namespace Sokoban
                 Console.Write("P");
 
                 // 벽 출력
-                Console.SetCursorPosition(wallX, wallY); ;
-                Console.Write("#");
-
+                for (int i = 0; i < wallCount; ++i)
+                {
+                    Console.SetCursorPosition(wallX[i], wallY[i]); ;
+                    Console.Write("#");
+                }
+                
                 // 박스 출력
                 Console.SetCursorPosition(boxX, boxY); ;
                 Console.Write("@");
@@ -122,10 +126,20 @@ namespace Sokoban
                 }
 
                 // 플레이어와 벽의 충돌 처리
-                // 1. 플레이어와 벽이 충돌했는지 감지한다. => (플레이어 좌표) == (벽 좌표)
-                bool isSamePlayerXAndWallX = newPlayerX == wallX;
-                bool isSamePlayerYAndWallY = newPlayerY == wallY;
-                bool isCollidedPlayerWithWall = isSamePlayerXAndWallX && isSamePlayerYAndWallY;
+                // 1. 플레이어와 벽들 중 하나라도 충돌했는지 감지한다.
+                bool isCollidedPlayerWithWall = false;
+                for (int i = 0; i < wallCount; ++i)
+                {
+                    bool isSamePlayerXAndWallX = newPlayerX == wallX[i];
+                    bool isSamePlayerYAndWallY = newPlayerY == wallY[i];
+                    bool isCollided = isSamePlayerXAndWallX && isSamePlayerYAndWallY;
+
+                    if (isCollided)
+                    {
+                        isCollidedPlayerWithWall = true;
+                        break;
+                    }
+                }
 
                 // 2. 충돌했다면 위치를 다시 되돌린다.
                 if (isCollidedPlayerWithWall)
@@ -172,9 +186,19 @@ namespace Sokoban
 
                 // 박스와 벽의 충돌 처리
                 // 1. 박스와 벽의 충돌을 감지한다.
-                bool isSameBoxXAndWallX = newBoxX == wallX;
-                bool isSameBoxYAndWallY = newBoxY == wallY;
-                bool isCollidedBoxWithWall = isSameBoxXAndWallX && isSameBoxYAndWallY;
+                bool isCollidedBoxWithWall = false;
+                for (int i = 0; i < wallCount; ++i)
+                {
+                    bool isSameBoxXAndWallX = newBoxX == wallX[i];
+                    bool isSameBoxYAndWallY = newBoxY == wallY[i];
+                    bool isCollided = isSameBoxXAndWallX && isSameBoxYAndWallY;
+
+                    if (isCollided)
+                    {
+                        isCollidedBoxWithWall = true;
+                        break;
+                    }
+                }
 
                 // 2. 충돌했다면 좌표 갱신을 하지 않는다.
                 if (isCollidedBoxWithWall)
