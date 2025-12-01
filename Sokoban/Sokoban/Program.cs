@@ -1,5 +1,7 @@
 ﻿
 
+using System.Reflection.Metadata.Ecma335;
+
 namespace Sokoban
 {
     internal class Program
@@ -38,7 +40,12 @@ namespace Sokoban
             // 벽 데이터
             int wallX = 3;
             int wallY = 3;
-            
+
+            // 박스 데이터
+            int boxX = 6;
+            int boxY = 6;
+
+
             // ------------ 게임 루프 -----------
             while (true)
             {
@@ -53,6 +60,10 @@ namespace Sokoban
                 // 벽 출력
                 Console.SetCursorPosition(wallX, wallY); ;
                 Console.Write("#");
+
+                // 박스 출력
+                Console.SetCursorPosition(boxX, boxY); ;
+                Console.Write("@");
 
                 // ------------ ProcessInput -----------
                 // 키보드 입력
@@ -115,7 +126,58 @@ namespace Sokoban
                     continue;
                 }
 
-                // 플레이어의 좌표를 갱신한다.
+                // 플레이어와 박스의 충돌 처리
+                // 1. 플레이어와 박스의 충돌을 감지한다.
+                bool isSamePlayerXAndBoxX = newPlayerX == boxX;
+                bool isSamePlayerYAndBoxY = newPlayerY == boxY;
+                bool isCollidedPlayerWithBox = isSamePlayerXAndBoxX && isSamePlayerYAndBoxY;
+
+                // 2. 충돌했다면 박스의 새 좌표를 갱신한다.
+                int newBoxX = boxX;
+                int newBoxY = boxY;
+                if (isCollidedPlayerWithBox)
+                {
+                    switch (playerDirection)
+                    {
+                        case Direction.Left:
+                            newBoxX = Math.Max(mapSizeMinX, boxX - 1);
+                            newPlayerX = newBoxX + 1;
+                            break;
+                        case Direction.Right:
+                            newBoxX = Math.Min(mapSizeMaxX, boxX + 1);
+                            newPlayerX = newBoxX - 1;
+                            break;
+                        case Direction.Up:
+                            newBoxY = Math.Max(mapSizeMinY, boxY - 1);
+                            newPlayerY = newBoxY + 1;
+                            break;
+                        case Direction.Down:
+                            newBoxY = Math.Min(mapSizeMaxY, boxY + 1);
+                            newPlayerY = newBoxY - 1;
+                            break;
+                        default:
+                            Console.Clear();
+                            Console.WriteLine($"[Error] at 박스 이동 처리: 잘못된 방향입니다. {playerDirection}");
+                            return;
+                    }
+                }
+
+                // 박스와 벽의 충돌 처리
+                // 1. 박스와 벽의 충돌을 감지한다.
+                bool isSameBoxXAndWallX = newBoxX == wallX;
+                bool isSameBoxYAndWallY = newBoxY == wallY;
+                bool isCollidedBoxWithWall = isSameBoxXAndWallX && isSameBoxYAndWallY;
+
+                // 2. 충돌했다면 좌표 갱신을 하지 않는다.
+                if (isCollidedBoxWithWall)
+                {
+                    continue;
+                }
+
+                // 좌표를 갱신한다.
+                boxX = newBoxX;
+                boxY = newBoxY;
+
                 playerX = newPlayerX;
                 playerY = newPlayerY;
             }
