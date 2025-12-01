@@ -48,8 +48,10 @@ namespace Sokoban
             int boxY = 6;
 
             // 골 데이터
-            int goalX = 4;
-            int goalY = 5;
+            int[] goalX = { 4, 7 };
+            int[] goalY = { 5, 10 };
+            bool[] isBoxOnGoal = { false, false };
+            int goalCount = goalX.Length;
 
             // ------------ 게임 루프 -----------
             while (isGameOver == false)
@@ -58,9 +60,16 @@ namespace Sokoban
                 // 이전 화면 지움
                 Console.Clear();
 
+                // 박스 출력
+                Console.SetCursorPosition(boxX, boxY); ;
+                Console.Write("@");
+
                 // 골 출력
-                Console.SetCursorPosition(goalX, goalY);
-                Console.Write("O");
+                for (int i = 0; i < goalCount; ++i)
+                {
+                    Console.SetCursorPosition(goalX[i], goalY[i]);
+                    Console.Write(isBoxOnGoal[i] ? "*" : "O");
+                }
 
                 // 플레이어 출력
                 Console.SetCursorPosition(playerX, playerY);
@@ -72,10 +81,6 @@ namespace Sokoban
                     Console.SetCursorPosition(wallX[i], wallY[i]); ;
                     Console.Write("#");
                 }
-                
-                // 박스 출력
-                Console.SetCursorPosition(boxX, boxY); ;
-                Console.Write("@");
 
                 // ------------ ProcessInput -----------
                 // 키보드 입력
@@ -208,14 +213,13 @@ namespace Sokoban
 
                 // 박스와 골의 충돌 처리
                 // 1. 박스와 골의 충돌을 감지한다.
-                bool isSameBoxXAndGoalX = newBoxX == goalX;
-                bool isSameBoxYAndGoalY = newBoxY == goalY;
-                bool isCollidedBoxWithGoal = isSameBoxXAndGoalX && isSameBoxYAndGoalY;
-
-                // 2. 충돌했다면 게임을 끝낸다.
-                if (isCollidedBoxWithGoal)
+                for (int i = 0; i < goalCount; ++i)
                 {
-                    isGameOver = true;
+                    bool isSameBoxXAndGoalX = newBoxX == goalX[i];
+                    bool isSameBoxYAndGoalY = newBoxY == goalY[i];
+                    bool isCollidedBoxWithGoal = isSameBoxXAndGoalX && isSameBoxYAndGoalY;
+
+                    isBoxOnGoal[i] = isCollidedBoxWithGoal;
                 }
 
                 // 좌표를 갱신한다.
