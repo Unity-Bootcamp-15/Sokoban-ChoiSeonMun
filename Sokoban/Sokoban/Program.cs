@@ -31,6 +31,7 @@ namespace Sokoban
             int mapSizeMinY = 0;
             int mapSizeMaxX = 10;
             int mapSizeMaxY = 10;
+            bool isGameOver = false;
 
             // 플레이어 데이터
             int playerX = 5;
@@ -45,13 +46,20 @@ namespace Sokoban
             int boxX = 6;
             int boxY = 6;
 
+            // 골 데이터
+            int goalX = 4;
+            int goalY = 5;
 
             // ------------ 게임 루프 -----------
-            while (true)
+            while (isGameOver == false)
             {
                 // ------------ Render -----------
                 // 이전 화면 지움
                 Console.Clear();
+
+                // 골 출력
+                Console.SetCursorPosition(goalX, goalY);
+                Console.Write("O");
 
                 // 플레이어 출력
                 Console.SetCursorPosition(playerX, playerY);
@@ -174,6 +182,18 @@ namespace Sokoban
                     continue;
                 }
 
+                // 박스와 골의 충돌 처리
+                // 1. 박스와 골의 충돌을 감지한다.
+                bool isSameBoxXAndGoalX = newBoxX == goalX;
+                bool isSameBoxYAndGoalY = newBoxY == goalY;
+                bool isCollidedBoxWithGoal = isSameBoxXAndGoalX && isSameBoxYAndGoalY;
+
+                // 2. 충돌했다면 게임을 끝낸다.
+                if (isCollidedBoxWithGoal)
+                {
+                    isGameOver = true;
+                }
+
                 // 좌표를 갱신한다.
                 boxX = newBoxX;
                 boxY = newBoxY;
@@ -181,6 +201,10 @@ namespace Sokoban
                 playerX = newPlayerX;
                 playerY = newPlayerY;
             }
+
+            // 게임 종료 처리
+            Console.Clear();
+            Console.WriteLine("축하합니다! 게임을 클리어하셨습니다!");
         }
     }
 }
