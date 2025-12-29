@@ -57,6 +57,16 @@ namespace Sokoban
             // ------------ 게임 루프 -----------
             while (isGameOver == false)
             {
+                Render();
+                ConsoleKeyInfo keyInfo = ProcessInput();
+                Update(keyInfo);
+            }
+
+            ShowClearMessage();
+
+            // ---------------------------------------------------
+            void Render()
+            {
                 // ------------ Render -----------
                 // 이전 화면 지움
                 Console.Clear();
@@ -67,7 +77,7 @@ namespace Sokoban
                     Console.SetCursorPosition(boxX[i], boxY[i]); ;
                     Console.Write("@");
                 }
-                
+
                 // 골 출력
                 for (int i = 0; i < goalCount; ++i)
                 {
@@ -85,12 +95,15 @@ namespace Sokoban
                     Console.SetCursorPosition(wallX[i], wallY[i]); ;
                     Console.Write("#");
                 }
+            }
 
-                // ------------ ProcessInput -----------
-                // 키보드 입력
-                ConsoleKeyInfo keyInfo = Console.ReadKey();
+            ConsoleKeyInfo ProcessInput()
+            {
+                return Console.ReadKey();
+            }
 
-                // ------------ Update -----------
+            void Update(ConsoleKeyInfo keyInfo)
+            {
                 // 키 입력에 따라 방향 처리
                 if (keyInfo.Key == ConsoleKey.DownArrow)
                 {
@@ -154,7 +167,7 @@ namespace Sokoban
                 if (isCollidedPlayerWithWall)
                 {
                     // 움직임을 반영하지 않는다.
-                    continue;
+                    return;
                 }
 
                 // 플레이어와 박스의 충돌 처리
@@ -173,7 +186,7 @@ namespace Sokoban
                         break;
                     }
                 }
-                
+
 
                 // 2. 충돌했다면
                 if (collidedBoxIndex != NoCollidedBox)
@@ -226,7 +239,7 @@ namespace Sokoban
                     // 2. 충돌했다면 좌표 갱신을 하지 않는다.
                     if (isCollidedBoxWithWall)
                     {
-                        continue;
+                        return;
                     }
 
                     // 2-3. 박스끼리의 충돌 처리
@@ -251,7 +264,7 @@ namespace Sokoban
 
                     if (isCollidedBetweenBoxes)
                     {
-                        continue;
+                        return;
                     }
 
                     // 2-4. 박스의 좌표를 갱신한다.
@@ -276,7 +289,7 @@ namespace Sokoban
                             isBoxOnGoal[goalIdx] = true;
                             break;
                         }
-                        
+
                     }
                 }
 
@@ -298,9 +311,11 @@ namespace Sokoban
                 playerY = newPlayerY;
             }
 
-            // 게임 종료 처리
-            Console.Clear();
-            Console.WriteLine("축하합니다! 게임을 클리어하셨습니다!");
+            void ShowClearMessage()
+            {
+                Console.Clear();
+                Console.WriteLine("축하합니다! 게임을 클리어하셨습니다!");
+            }
         }
     }
 }
