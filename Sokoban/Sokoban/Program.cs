@@ -44,8 +44,9 @@ namespace Sokoban
             int wallCount = wallX.Length;
 
             // 박스 데이터
-            int boxX = 6;
-            int boxY = 6;
+            int[] boxX = { 6, 8 };
+            int[] boxY = { 6, 7 };
+            int boxCount = boxX.Length;
 
             // 골 데이터
             int[] goalX = { 4, 7 };
@@ -61,9 +62,12 @@ namespace Sokoban
                 Console.Clear();
 
                 // 박스 출력
-                Console.SetCursorPosition(boxX, boxY); ;
-                Console.Write("@");
-
+                for (int i = 0; i < boxCount; ++i)
+                {
+                    Console.SetCursorPosition(boxX[i], boxY[i]); ;
+                    Console.Write("@");
+                }
+                
                 // 골 출력
                 for (int i = 0; i < goalCount; ++i)
                 {
@@ -154,32 +158,47 @@ namespace Sokoban
                 }
 
                 // 플레이어와 박스의 충돌 처리
-                // 1. 플레이어와 박스의 충돌을 감지한다.
-                bool isSamePlayerXAndBoxX = newPlayerX == boxX;
-                bool isSamePlayerYAndBoxY = newPlayerY == boxY;
-                bool isCollidedPlayerWithBox = isSamePlayerXAndBoxX && isSamePlayerYAndBoxY;
-
-                // 2. 충돌했다면 박스의 새 좌표를 갱신한다.
-                int newBoxX = boxX;
-                int newBoxY = boxY;
-                if (isCollidedPlayerWithBox)
+                // 1. 플레이어가 어떤 박스와 충돌했는지 찾는다.
+                const int NoCollidedBox = -1;
+                int collidedBoxIndex = NoCollidedBox;
+                for (int i = 0; i < boxCount; ++i)
                 {
+                    bool isSamePlayerXAndBoxX = newPlayerX == boxX[i];
+                    bool isSamePlayerYAndBoxY = newPlayerY == boxY[i];
+                    bool isCollidedPlayerWithBox = isSamePlayerXAndBoxX && isSamePlayerYAndBoxY;
+
+                    if (isCollidedPlayerWithBox)
+                    {
+                        collidedBoxIndex = i;
+                        break;
+                    }
+                }
+                
+
+                // 2. 충돌했다면
+                if (collidedBoxIndex != NoCollidedBox)
+                {
+                    // 2-1. 박스의 새로운 좌표를 구한다.
+                    int currentBoxX = boxX[collidedBoxIndex];
+                    int currentBoxY = boxY[collidedBoxIndex];
+                    int newBoxX = currentBoxX;
+                    int newBoxY = currentBoxY;
                     switch (playerDirection)
                     {
                         case Direction.Left:
-                            newBoxX = Math.Max(mapSizeMinX, boxX - 1);
+                            newBoxX = Math.Max(mapSizeMinX, currentBoxX - 1);
                             newPlayerX = newBoxX + 1;
                             break;
                         case Direction.Right:
-                            newBoxX = Math.Min(mapSizeMaxX, boxX + 1);
+                            newBoxX = Math.Min(mapSizeMaxX, currentBoxX + 1);
                             newPlayerX = newBoxX - 1;
                             break;
                         case Direction.Up:
-                            newBoxY = Math.Max(mapSizeMinY, boxY - 1);
+                            newBoxY = Math.Max(mapSizeMinY, currentBoxY - 1);
                             newPlayerY = newBoxY + 1;
                             break;
                         case Direction.Down:
-                            newBoxY = Math.Min(mapSizeMaxY, boxY + 1);
+                            newBoxY = Math.Min(mapSizeMaxY, currentBoxY + 1);
                             newPlayerY = newBoxY - 1;
                             break;
                         default:
@@ -187,45 +206,94 @@ namespace Sokoban
                             Console.WriteLine($"[Error] at 박스 이동 처리: 잘못된 방향입니다. {playerDirection}");
                             return;
                     }
-                }
 
-                // 박스와 벽의 충돌 처리
-                // 1. 박스와 벽의 충돌을 감지한다.
-                bool isCollidedBoxWithWall = false;
-                for (int i = 0; i < wallCount; ++i)
-                {
-                    bool isSameBoxXAndWallX = newBoxX == wallX[i];
-                    bool isSameBoxYAndWallY = newBoxY == wallY[i];
-                    bool isCollided = isSameBoxXAndWallX && isSameBoxYAndWallY;
-
-                    if (isCollided)
+                    // 2-2. 벽과의 충돌 처리
+                    // 1. 박스와 벽의 충돌을 감지한다.
+                    bool isCollidedBoxWithWall = false;
+                    for (int i = 0; i < wallCount; ++i)
                     {
-                        isCollidedBoxWithWall = true;
-                        break;
-                    }
-                }
+                        bool isSameBoxXAndWallX = newBoxX == wallX[i];
+                        bool isSameBoxYAndWallY = newBoxY == wallY[i];
+                        bool isCollided = isSameBoxXAndWallX && isSameBoxYAndWallY;
 
-                // 2. 충돌했다면 좌표 갱신을 하지 않는다.
-                if (isCollidedBoxWithWall)
-                {
-                    continue;
+                        if (isCollided)
+                        {
+                            isCollidedBoxWithWall = true;
+                            break;
+                        }
+                    }
+
+                    // 2. 충돌했다면 좌표 갱신을 하지 않는다.
+                    if (isCollidedBoxWithWall)
+                    {
+                        continue;
+                    }
+
+                    // 2-3. 박스끼리의 충돌 처리
+                    bool isCollidedBetweenBoxes = false;
+                    for (int i = 0; i < boxCount; ++i)
+                    {
+                        if (i == collidedBoxIndex)
+                        {
+                            continue;
+                        }
+
+                        bool isSameBoxXAndOtherBoxX = newBoxX == boxX[i];
+                        bool isSameBoxYAndOtherBoxY = newBoxY == boxY[i];
+                        bool isCollided = isSameBoxXAndOtherBoxX && isSameBoxYAndOtherBoxY;
+
+                        if (isCollided)
+                        {
+                            isCollidedBetweenBoxes = true;
+                            break;
+                        }
+                    }
+
+                    if (isCollidedBetweenBoxes)
+                    {
+                        continue;
+                    }
+
+                    // 2-4. 박스의 좌표를 갱신한다.
+                    boxX[collidedBoxIndex] = newBoxX;
+                    boxY[collidedBoxIndex] = newBoxY;
                 }
 
                 // 박스와 골의 충돌 처리
-                // 1. 박스와 골의 충돌을 감지한다.
-                for (int i = 0; i < goalCount; ++i)
+                // ㄴ 골 위에 박스가 있는지 확인한다.
+                for (int goalIdx = 0; goalIdx < goalCount; ++goalIdx)
                 {
-                    bool isSameBoxXAndGoalX = newBoxX == goalX[i];
-                    bool isSameBoxYAndGoalY = newBoxY == goalY[i];
-                    bool isCollidedBoxWithGoal = isSameBoxXAndGoalX && isSameBoxYAndGoalY;
+                    isBoxOnGoal[goalIdx] = false;
 
-                    isBoxOnGoal[i] = isCollidedBoxWithGoal;
+                    for (int boxIdx = 0; boxIdx < boxCount; ++boxIdx)
+                    {
+                        bool isSameBoxXAndGoalX = boxX[boxIdx] == goalX[goalIdx];
+                        bool isSameBoxYAndGoalY = boxY[boxIdx] == goalY[goalIdx];
+                        bool isCollidedBoxWithGoal = isSameBoxXAndGoalX && isSameBoxYAndGoalY;
+
+                        if (isCollidedBoxWithGoal)
+                        {
+                            isBoxOnGoal[goalIdx] = true;
+                            break;
+                        }
+                        
+                    }
                 }
 
-                // 좌표를 갱신한다.
-                boxX = newBoxX;
-                boxY = newBoxY;
+                // 게임의 종료 여부
+                // ㄴ 모든 골 위에 박스가 올려져 있는 것
+                bool isAllBoxOnGoal = true;
+                for (int i = 0; i < goalCount; ++i)
+                {
+                    isAllBoxOnGoal &= isBoxOnGoal[i];
+                }
 
+                if (isAllBoxOnGoal)
+                {
+                    isGameOver = true;
+                }
+
+                // 플레이어의 좌표를 갱신한다.
                 playerX = newPlayerX;
                 playerY = newPlayerY;
             }
