@@ -15,6 +15,9 @@ namespace Sokoban
             Down
         }
 
+        // Action: 반환값이 없는 것
+        // Func: 반환값이 
+        // Predicate(술어): 반환타입 bool 
         static void Main(string[] args)
         {
             // ----------- 초기화 -------------
@@ -67,33 +70,28 @@ namespace Sokoban
             // ---------------------------------------------------
             void Render()
             {
-                // ------------ Render -----------
-                // 이전 화면 지움
                 Console.Clear();
 
-                // 박스 출력
-                for (int i = 0; i < boxCount; ++i)
+                RenderObjects(boxX, boxY, boxCount, _ => "@");
+                RenderObjects(goalX, goalY, goalCount, idx => isBoxOnGoal[idx] ? "*" : "O");
+                RenderObject(playerX, playerY, "P");
+                RenderObjects(wallX, wallY, wallCount, _ => "#");
+
+                // ---------------------------------------------------
+
+                void RenderObject(int x, int y, string symbol)
                 {
-                    Console.SetCursorPosition(boxX[i], boxY[i]); ;
-                    Console.Write("@");
+                    Console.SetCursorPosition(x, y); ;
+                    Console.Write(symbol);
                 }
 
-                // 골 출력
-                for (int i = 0; i < goalCount; ++i)
+                // NOTE: 조건부 심볼이 있어 Func를 받는다.
+                void RenderObjects(int[] x, int[] y, int count, Func<int, string> symbolSelector)
                 {
-                    Console.SetCursorPosition(goalX[i], goalY[i]);
-                    Console.Write(isBoxOnGoal[i] ? "*" : "O");
-                }
-
-                // 플레이어 출력
-                Console.SetCursorPosition(playerX, playerY);
-                Console.Write("P");
-
-                // 벽 출력
-                for (int i = 0; i < wallCount; ++i)
-                {
-                    Console.SetCursorPosition(wallX[i], wallY[i]); ;
-                    Console.Write("#");
+                    for (int i = 0; i < count; ++i)
+                    {
+                        RenderObject(x[i], y[i], symbolSelector(i));
+                    }
                 }
             }
 
