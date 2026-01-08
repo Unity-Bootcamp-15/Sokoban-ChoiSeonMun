@@ -22,14 +22,7 @@ namespace Sokoban
     // X, Y를 묶은 개체 => Position
     internal class Program
     {
-        enum Direction
-        {
-            None,
-            Left,
-            Right,
-            Up,
-            Down
-        }
+        
 
         static void Main(string[] args)
         {
@@ -130,7 +123,6 @@ namespace Sokoban
                 }
  
                 // ---------------------------------------------------
-
                 Direction GetDirectionFrom(ConsoleKeyInfo keyInfo) => keyInfo.Key switch
                 {
                     ConsoleKey.DownArrow => Direction.Down,
@@ -138,15 +130,6 @@ namespace Sokoban
                     ConsoleKey.LeftArrow => Direction.Left,
                     ConsoleKey.RightArrow => Direction.Right,
                     _ => Direction.None
-                };
-
-                // 필드를 조작하는 함수는 Position을 조작하는 것도 상위 개체에서 만드는 게 옳더.
-                Position GetNewPositionByDirection(Direction direction, Position old) => direction switch
-                {
-                    Direction.Left => Position.At(Math.Max(mapMinSize.X, old.X - 1), old.Y),
-                    Direction.Right => Position.At(Math.Min(mapMaxSize.X, old.X + 1), old.Y),
-                    Direction.Up => Position.At(old.X, Math.Max(mapMinSize.Y, old.Y - 1)),
-                    Direction.Down => Position.At(old.X, Math.Min(mapMaxSize.Y, old.Y + 1))
                 };
 
                 int GetCollidedIndex(Position pos, Position[] targetPositions, int targetCount, int excludedIndex = -1)
@@ -195,7 +178,13 @@ namespace Sokoban
                         return false;
                     }
 
-                    Position newPlayerPosition = GetNewPositionByDirection(playerDirection, playerPosition);
+                    Position deltaPosition = playerDirection.ToOffset();
+                    Position newPlayerPosition = playerPosition + deltaPosition;
+                    if (newPlayerPosition.X < mapMinSize.X || newPlayerPosition.X > mapMaxSize.X
+                        || newPlayerPosition.Y < mapMinSize.Y || newPlayerPosition.Y > mapMaxSize.Y)
+                    {
+                        return false;
+                    }
 
                     // 플레이어와 벽의 충돌 처리
                     if (IsCollided(newPlayerPosition, wallPositions, wallCount))
@@ -211,7 +200,13 @@ namespace Sokoban
                     {
                         // 2-1. 박스의 새로운 좌표를 구한다.
                         Position currentBoxPosition = boxPositions[collidedBoxIndex];
-                        Position newBoxPosition = GetNewPositionByDirection(playerDirection, currentBoxPosition);
+                        Position boxDeltaPosition = playerDirection.ToOffset();
+                        Position newBoxPosition = currentBoxPosition + boxDeltaPosition;
+                        if (newBoxPosition.X < mapMinSize.X || newBoxPosition.X > mapMaxSize.X
+                        || newBoxPosition.Y < mapMinSize.Y || newBoxPosition.Y > mapMaxSize.Y)
+                        {
+                            return false;
+                        }
 
                         // 2-2. 벽과의 충돌 처리
                         if (IsCollided(newBoxPosition, wallPositions, wallCount))

@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 namespace Sokoban
 {
     // Position 타입끼리의 비교
-    internal struct Position : IEquatable<Position>
+    public struct Position : IEquatable<Position>
     {
         private int _x;
         private int _y;
@@ -34,9 +34,15 @@ namespace Sokoban
             return (X == other.X && Y == other.Y);
         }
 
+        public Position Add(Position other)
+        {
+            return new Position(X + other.X, Y + other.Y);
+        }
 
-        // 같음 연산자 ==
+
         public static bool operator ==(Position left, Position right) => left.Equals(right);
         public static bool operator !=(Position left, Position right) => !(left == right);
+
+        public static Position operator +(Position left, Position right) => left.Add(right);
     }
 }
