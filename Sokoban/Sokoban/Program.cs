@@ -128,23 +128,14 @@ namespace Sokoban
                     _ => Direction.None
                 };
 
-                int GetCollidedIndex(Position newPosition, List<GameObject> targets, int excludedIndex = -1)
-                {
-                    int found = targets.FindIndex(t => t.Position == newPosition);
-                    return (found == excludedIndex) ? -1 : found;
-                }
-
-                bool IsCollided(Position newPosition, List<GameObject> targets, int excludedIndex = -1)
-                {
-                    return -1 != GetCollidedIndex(newPosition, targets, excludedIndex);
-                }
+                
 
                 void UpdateGoalState()
                 {
                     for (int goalIdx = 0; goalIdx < goals.Count; ++goalIdx)
                     {
                         GameObject currentGoal = goals[goalIdx];
-                        isBoxOnGoal[goalIdx] = IsCollided(currentGoal.Position, boxes);
+                        isBoxOnGoal[goalIdx] = boxes.ExistsAt(currentGoal.Position);
                     }
                 }
 
@@ -168,7 +159,7 @@ namespace Sokoban
                     }
 
                     // 플레이어와 벽의 충돌 처리
-                    if (IsCollided(newPlayerPosition, walls))
+                    if (walls.ExistsAt(newPlayerPosition))
                     {
                         return false;
                     }
@@ -177,7 +168,7 @@ namespace Sokoban
                     // 1. 플레이어가 어떤 박스와 충돌했는지 찾는다.
                     const int NoCollidedBox = -1;
                     // 플레이어의 위치랑 박스랑 충돌했는지?
-                    int collidedBoxIndex = GetCollidedIndex(newPlayerPosition, boxes);
+                    int collidedBoxIndex = boxes.IndexAt(newPlayerPosition);
                     if (collidedBoxIndex != NoCollidedBox)
                     {
                         // 2-1. 박스의 새로운 좌표를 구한다.
@@ -191,13 +182,13 @@ namespace Sokoban
                         }
 
                         // 2-2. 벽과의 충돌 처리
-                        if (IsCollided(newBoxPosition, walls))
+                        if (walls.ExistsAt(newBoxPosition))
                         {
                             return false;
                         }
 
                         // 2-3. 박스끼리의 충돌 처리
-                        if (IsCollided(newBoxPosition, boxes, collidedBoxIndex))
+                        if (boxes.ExistsAt(newBoxPosition, collidedBoxIndex))
                         {
                             return false;
                         }
