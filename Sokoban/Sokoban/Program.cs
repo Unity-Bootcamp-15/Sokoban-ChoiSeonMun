@@ -20,10 +20,11 @@ namespace Sokoban
     // 게임
 
     // X, Y를 묶은 개체 => Position
+
+    // Game
+    // 조건문을 리팩토링 하겠다.
     internal class Program
     {
-        
-
         static void Main(string[] args)
         {
             // ----------- 초기화 -------------
@@ -36,7 +37,6 @@ namespace Sokoban
             Console.Clear();
 
             // 게임 데이터 초기화
-
             Position mapMinSize = Position.At(0, 0);
             Position mapMaxSize = Position.At(10, 10);
             bool isGameOver = false;
@@ -46,7 +46,7 @@ namespace Sokoban
             Direction playerDirection = Direction.None;
 
             // 벽 데이터
-            Position[] wallPositions = new Position[5]
+            List<Position> wallPositions = new()
             {
                 Position.At(3, 3),
                 Position.At(4, 3),
@@ -54,24 +54,22 @@ namespace Sokoban
                 Position.At(6, 3),
                 Position.At(7, 3),
             };
-            int wallCount = wallPositions.Length;
+            
 
             // 박스 데이터
-            Position[] boxPositions = new Position[2]
+            List<Position> boxPositions = new()
             {
                 Position.At(6, 6),
                 Position.At(8, 7)
             };
-            int boxCount = boxPositions.Length;
 
             // 골 데이터
-            Position[] goalPositions = new Position[2]
+            List<Position> goalPositions = new()
             {
                 Position.At(4, 5),
                 Position.At(7, 10)
             };
             bool[] isBoxOnGoal = { false, false };
-            int goalCount = goalPositions.Length;
 
             // ------------ 게임 루프 -----------
             while (isGameOver == false)
@@ -88,10 +86,10 @@ namespace Sokoban
             {
                 Console.Clear();
 
-                RenderObjects(boxPositions, boxCount, _ => "@");
-                RenderObjects(goalPositions, goalCount, idx => isBoxOnGoal[idx] ? "*" : "O");
+                RenderObjects(boxPositions, _ => "@");
+                RenderObjects(goalPositions, idx => isBoxOnGoal[idx] ? "*" : "O");
                 RenderObject(playerPosition, "P");
-                RenderObjects(wallPositions, wallCount, _ => "#");
+                RenderObjects(wallPositions, _ => "#");
 
                 // ---------------------------------------------------
 
@@ -102,9 +100,9 @@ namespace Sokoban
                 }
 
                 // NOTE: 조건부 심볼이 있어 Func를 받는다.
-                void RenderObjects(Position[] positions, int count, Func<int, string> symbolSelector)
+                void RenderObjects(List<Position> positions, Func<int, string> symbolSelector)
                 {
-                    for (int i = 0; i < count; ++i)
+                    for (int i = 0; i < positions.Count; ++i)
                     {
                         RenderObject(positions[i], symbolSelector(i));
                     }
@@ -132,10 +130,10 @@ namespace Sokoban
                     _ => Direction.None
                 };
 
-                int GetCollidedIndex(Position pos, Position[] targetPositions, int targetCount, int excludedIndex = -1)
+                int GetCollidedIndex(Position pos, List<Position> targetPositions, int excludedIndex = -1)
                 {
                     int found = -1;
-                    for (int idx = 0; idx < targetCount; ++idx)
+                    for (int idx = 0; idx < targetPositions.Count; ++idx)
                     {
                         if (idx == excludedIndex)
                         {
@@ -152,17 +150,17 @@ namespace Sokoban
                     return found;
                 }
 
-                bool IsCollided(Position pos, Position[] targetPositions, int targetCount, int excludedIndex = -1)
+                bool IsCollided(Position pos, List<Position> targetPositions, int excludedIndex = -1)
                 {
-                    return -1 != GetCollidedIndex(pos, targetPositions, targetCount, excludedIndex);
+                    return -1 != GetCollidedIndex(pos, targetPositions, excludedIndex);
                 }
 
                 void UpdateGoalState()
                 {
-                    for (int goalIdx = 0; goalIdx < goalCount; ++goalIdx)
+                    for (int goalIdx = 0; goalIdx < goalPositions.Count; ++goalIdx)
                     {
                         Position currentGoalPosition = goalPositions[goalIdx];
-                        isBoxOnGoal[goalIdx] = IsCollided(currentGoalPosition, boxPositions, boxCount);
+                        isBoxOnGoal[goalIdx] = IsCollided(currentGoalPosition, boxPositions);
                     }
                 }
 
@@ -186,8 +184,9 @@ namespace Sokoban
                         return false;
                     }
 
+
                     // 플레이어와 벽의 충돌 처리
-                    if (IsCollided(newPlayerPosition, wallPositions, wallCount))
+                    if (IsCollided(newPlayerPosition, wallPositions))
                     {
                         return false;
                     }
@@ -195,7 +194,7 @@ namespace Sokoban
                     // 플레이어와 박스의 충돌 처리
                     // 1. 플레이어가 어떤 박스와 충돌했는지 찾는다.
                     const int NoCollidedBox = -1;
-                    int collidedBoxIndex = GetCollidedIndex(newPlayerPosition, boxPositions, boxCount);
+                    int collidedBoxIndex = GetCollidedIndex(newPlayerPosition, boxPositions);
                     if (collidedBoxIndex != NoCollidedBox)
                     {
                         // 2-1. 박스의 새로운 좌표를 구한다.
@@ -209,13 +208,13 @@ namespace Sokoban
                         }
 
                         // 2-2. 벽과의 충돌 처리
-                        if (IsCollided(newBoxPosition, wallPositions, wallCount))
+                        if (IsCollided(newBoxPosition, wallPositions))
                         {
                             return false;
                         }
 
                         // 2-3. 박스끼리의 충돌 처리
-                        if (IsCollided(newBoxPosition, boxPositions, boxCount, collidedBoxIndex))
+                        if (IsCollided(newBoxPosition, boxPositions, collidedBoxIndex))
                         {
                             return false;
                         }
