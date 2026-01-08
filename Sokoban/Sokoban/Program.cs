@@ -41,32 +41,31 @@ namespace Sokoban
             bool isGameOver = false;
 
             // 플레이어 데이터
-            Position playerPosition = Position.At(5, 10);
+            GameObject player = new(Position.At(5, 10), "P");
             Direction playerDirection = Direction.None;
 
             // 벽 데이터
-            List<Position> wallPositions = new()
+            List<GameObject> walls = new()
             {
-                Position.At(3, 3),
-                Position.At(4, 3),
-                Position.At(5, 3),
-                Position.At(6, 3),
-                Position.At(7, 3),
+                new(position: Position.At(3, 3), symbol: "#"),
+                new(position: Position.At(4, 3), symbol: "#"),
+                new(position: Position.At(5, 3), symbol: "#"),
+                new(position: Position.At(6, 3), symbol: "#"),
+                new(position: Position.At(7, 3), symbol: "#"),
             };
             
-
             // 박스 데이터
-            List<Position> boxPositions = new()
+            List<GameObject> boxes = new()
             {
-                Position.At(6, 6),
-                Position.At(8, 7)
+                new(Position.At(6, 6), "@"),
+                new(Position.At(8, 7), "@"),
             };
 
             // 골 데이터
-            List<Position> goalPositions = new()
+            List<GameObject> goals = new()
             {
-                Position.At(4, 5),
-                Position.At(7, 10)
+                new(Position.At(4, 5), "O"),
+                new(Position.At(7, 10), "O"),
             };
             bool[] isBoxOnGoal = { false, false };
 
@@ -85,10 +84,10 @@ namespace Sokoban
             {
                 Console.Clear();
 
-                RenderObjects(boxPositions, _ => "@");
-                RenderObjects(goalPositions, idx => isBoxOnGoal[idx] ? "*" : "O");
-                RenderObject(playerPosition, "P");
-                RenderObjects(wallPositions, _ => "#");
+                RenderObjects(boxes, _ => "@");
+                RenderObjects(goals, idx => isBoxOnGoal[idx] ? "*" : "O");
+                RenderObject(player.Position, "P");
+                RenderObjects(walls, _ => "#");
 
                 // ---------------------------------------------------
 
@@ -99,11 +98,11 @@ namespace Sokoban
                 }
 
                 // NOTE: 조건부 심볼이 있어 Func를 받는다.
-                void RenderObjects(List<Position> positions, Func<int, string> symbolSelector)
+                void RenderObjects(List<GameObject> objs, Func<int, string> symbolSelector)
                 {
-                    for (int i = 0; i < positions.Count; ++i)
+                    for (int i = 0; i < objs.Count; ++i)
                     {
-                        RenderObject(positions[i], symbolSelector(i));
+                        RenderObject(objs[i].Position, symbolSelector(i));
                     }
                 }
             }
@@ -129,37 +128,23 @@ namespace Sokoban
                     _ => Direction.None
                 };
 
-                int GetCollidedIndex(Position pos, List<Position> targetPositions, int excludedIndex = -1)
+                int GetCollidedIndex(Position newPosition, List<GameObject> targets, int excludedIndex = -1)
                 {
-                    int found = -1;
-                    for (int idx = 0; idx < targetPositions.Count; ++idx)
-                    {
-                        if (idx == excludedIndex)
-                        {
-                            continue;
-                        }
-
-                        if (pos == targetPositions[idx])
-                        {
-                            found = idx;
-                            break;
-                        }
-                    }
-
-                    return found;
+                    int found = targets.FindIndex(t => t.Position == newPosition);
+                    return (found == excludedIndex) ? -1 : found;
                 }
 
-                bool IsCollided(Position pos, List<Position> targetPositions, int excludedIndex = -1)
+                bool IsCollided(Position newPosition, List<GameObject> targets, int excludedIndex = -1)
                 {
-                    return -1 != GetCollidedIndex(pos, targetPositions, excludedIndex);
+                    return -1 != GetCollidedIndex(newPosition, targets, excludedIndex);
                 }
 
                 void UpdateGoalState()
                 {
-                    for (int goalIdx = 0; goalIdx < goalPositions.Count; ++goalIdx)
+                    for (int goalIdx = 0; goalIdx < goals.Count; ++goalIdx)
                     {
-                        Position currentGoalPosition = goalPositions[goalIdx];
-                        isBoxOnGoal[goalIdx] = IsCollided(currentGoalPosition, boxPositions);
+                        GameObject currentGoal = goals[goalIdx];
+                        isBoxOnGoal[goalIdx] = IsCollided(currentGoal.Position, boxes);
                     }
                 }
 
@@ -176,14 +161,14 @@ namespace Sokoban
                     }
 
                     Position deltaPosition = playerDirection.ToOffset();
-                    Position newPlayerPosition = playerPosition + deltaPosition;
+                    Position newPlayerPosition = player.Position + deltaPosition;
                     if (map.IsOutOfRange(newPlayerPosition))
                     {
                         return false;
                     }
 
                     // 플레이어와 벽의 충돌 처리
-                    if (IsCollided(newPlayerPosition, wallPositions))
+                    if (IsCollided(newPlayerPosition, walls))
                     {
                         return false;
                     }
@@ -191,11 +176,13 @@ namespace Sokoban
                     // 플레이어와 박스의 충돌 처리
                     // 1. 플레이어가 어떤 박스와 충돌했는지 찾는다.
                     const int NoCollidedBox = -1;
-                    int collidedBoxIndex = GetCollidedIndex(newPlayerPosition, boxPositions);
+                    // 플레이어의 위치랑 박스랑 충돌했는지?
+                    int collidedBoxIndex = GetCollidedIndex(newPlayerPosition, boxes);
                     if (collidedBoxIndex != NoCollidedBox)
                     {
                         // 2-1. 박스의 새로운 좌표를 구한다.
-                        Position currentBoxPosition = boxPositions[collidedBoxIndex];
+                        GameObject currentBox = boxes[collidedBoxIndex];
+                        Position currentBoxPosition = currentBox.Position;
                         Position boxDeltaPosition = playerDirection.ToOffset();
                         Position newBoxPosition = currentBoxPosition + boxDeltaPosition;
                         if (map.IsOutOfRange(newBoxPosition))
@@ -204,23 +191,23 @@ namespace Sokoban
                         }
 
                         // 2-2. 벽과의 충돌 처리
-                        if (IsCollided(newBoxPosition, wallPositions))
+                        if (IsCollided(newBoxPosition, walls))
                         {
                             return false;
                         }
 
                         // 2-3. 박스끼리의 충돌 처리
-                        if (IsCollided(newBoxPosition, boxPositions, collidedBoxIndex))
+                        if (IsCollided(newBoxPosition, boxes, collidedBoxIndex))
                         {
                             return false;
                         }
 
                         // 2-4. 박스의 좌표를 갱신한다.
-                        boxPositions[collidedBoxIndex] = newBoxPosition;
+                        currentBox.Position = newBoxPosition;
                     }
 
                     // 플레이어의 좌표를 갱신한다.
-                    playerPosition = newPlayerPosition;
+                    player.Position = newPlayerPosition;
 
                     return true;
                 }
