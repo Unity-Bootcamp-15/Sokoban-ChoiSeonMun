@@ -37,8 +37,7 @@ namespace Sokoban
             Console.Clear();
 
             // 게임 데이터 초기화
-            Position mapMinSize = Position.At(0, 0);
-            Position mapMaxSize = Position.At(10, 10);
+            Map map = new(minSize: Position.At(0, 0), maxSize: Position.At(10, 10));
             bool isGameOver = false;
 
             // 플레이어 데이터
@@ -178,12 +177,10 @@ namespace Sokoban
 
                     Position deltaPosition = playerDirection.ToOffset();
                     Position newPlayerPosition = playerPosition + deltaPosition;
-                    if (newPlayerPosition.X < mapMinSize.X || newPlayerPosition.X > mapMaxSize.X
-                        || newPlayerPosition.Y < mapMinSize.Y || newPlayerPosition.Y > mapMaxSize.Y)
+                    if (map.IsOutOfRange(newPlayerPosition))
                     {
                         return false;
                     }
-
 
                     // 플레이어와 벽의 충돌 처리
                     if (IsCollided(newPlayerPosition, wallPositions))
@@ -201,8 +198,7 @@ namespace Sokoban
                         Position currentBoxPosition = boxPositions[collidedBoxIndex];
                         Position boxDeltaPosition = playerDirection.ToOffset();
                         Position newBoxPosition = currentBoxPosition + boxDeltaPosition;
-                        if (newBoxPosition.X < mapMinSize.X || newBoxPosition.X > mapMaxSize.X
-                        || newBoxPosition.Y < mapMinSize.Y || newBoxPosition.Y > mapMaxSize.Y)
+                        if (map.IsOutOfRange(newBoxPosition))
                         {
                             return false;
                         }
