@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -39,5 +40,26 @@ namespace Sokoban
             
             return -1;
         }
+    }
+
+    public enum GameObjectType
+    {
+        None,
+        Wall,
+        Player,
+        Box,
+        Goal
+    }
+
+    public static class GameObjectFactory
+    {
+        public static GameObject Create(GameObjectType type, Position pos) => type switch
+        {
+            GameObjectType.Wall => new GameObject(pos, symbol: "#"),
+            GameObjectType.Player => new GameObject(pos, symbol: "P"),
+            GameObjectType.Box => new GameObject(pos, symbol: "@"),
+            GameObjectType.Goal => new GameObject(pos, symbol: "O"),
+            _ => throw new ArgumentException()
+        };
     }
 }

@@ -1,28 +1,5 @@
-﻿
-
-using System.Reflection.Metadata.Ecma335;
-
-namespace Sokoban
+﻿namespace Sokoban
 {
-
-    // 개체 지향 프로그래밍: 개체
-    // ㄴ 상태와 행위를 가진 것
-
-    // 어떤 데이터끼리 연관이 있는가?
-    // 그 데이터를 조작하는 함수는 무엇인가?
-
-    // 게임오브젝트
-    // ㄴ플레이어
-    // ㄴ벽
-    // ㄴ박스
-    // ㄴ골
-
-    // 게임
-
-    // X, Y를 묶은 개체 => Position
-
-    // Game
-    // 조건문을 리팩토링 하겠다.
     internal class Program
     {
         static void Main(string[] args)
@@ -41,31 +18,32 @@ namespace Sokoban
             bool isGameOver = false;
 
             // 플레이어 데이터
-            GameObject player = new(Position.At(5, 10), "P");
+            // ㄴ 1. 모든 데이터가 캡슐화 되지 않음.
+            GameObject player = GameObjectFactory.Create(GameObjectType.Player, Position.At(5, 10));
             Direction playerDirection = Direction.None;
 
             // 벽 데이터
             List<GameObject> walls = new()
             {
-                new(position: Position.At(3, 3), symbol: "#"),
-                new(position: Position.At(4, 3), symbol: "#"),
-                new(position: Position.At(5, 3), symbol: "#"),
-                new(position: Position.At(6, 3), symbol: "#"),
-                new(position: Position.At(7, 3), symbol: "#"),
+                GameObjectFactory.Create(GameObjectType.Wall, Position.At(3, 3)),
+                GameObjectFactory.Create(GameObjectType.Wall, Position.At(4, 3)),
+                GameObjectFactory.Create(GameObjectType.Wall, Position.At(5, 3)),
+                GameObjectFactory.Create(GameObjectType.Wall, Position.At(6, 3)),
+                GameObjectFactory.Create(GameObjectType.Wall, Position.At(7, 3)),
             };
             
             // 박스 데이터
             List<GameObject> boxes = new()
             {
-                new(Position.At(6, 6), "@"),
-                new(Position.At(8, 7), "@"),
+                GameObjectFactory.Create(GameObjectType.Box, Position.At(6, 6)),
+                GameObjectFactory.Create(GameObjectType.Box, Position.At(8, 7)),
             };
 
             // 골 데이터
             List<GameObject> goals = new()
             {
-                new(Position.At(4, 5), "O"),
-                new(Position.At(7, 10), "O"),
+                GameObjectFactory.Create(GameObjectType.Goal, Position.At(4, 5)),
+                GameObjectFactory.Create(GameObjectType.Goal, Position.At(7, 10)),
             };
             bool[] isBoxOnGoal = { false, false };
 
@@ -127,8 +105,6 @@ namespace Sokoban
                     ConsoleKey.RightArrow => Direction.Right,
                     _ => Direction.None
                 };
-
-                
 
                 void UpdateGoalState()
                 {
