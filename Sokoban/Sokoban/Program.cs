@@ -62,17 +62,18 @@
             {
                 Console.Clear();
 
-                RenderObjects(boxes, _ => "@");
+                boxes.ForEach(x => RenderObject(x));
                 RenderObjects(goals, idx => isBoxOnGoal[idx] ? "*" : "O");
-                RenderObject(player.Position, "P");
-                RenderObjects(walls, _ => "#");
+                RenderObject(player);
+                walls.ForEach(x => RenderObject(x));
 
                 // ---------------------------------------------------
 
-                void RenderObject(Position pos, string symbol)
+                // Render하는 코드
+                void RenderObject(IRenderingObject obj)
                 {
-                    Console.SetCursorPosition(pos.X, pos.Y);
-                    Console.Write(symbol);
+                    Console.SetCursorPosition(obj.X, obj.Y);
+                    Console.Write(obj.Symbol);
                 }
 
                 // NOTE: 조건부 심볼이 있어 Func를 받는다.
@@ -80,7 +81,8 @@
                 {
                     for (int i = 0; i < objs.Count; ++i)
                     {
-                        RenderObject(objs[i].Position, symbolSelector(i));
+                        Console.SetCursorPosition(objs[i].X, objs[i].Y);
+                        Console.Write(symbolSelector(i));
                     }
                 }
             }

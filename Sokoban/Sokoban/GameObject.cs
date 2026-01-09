@@ -7,12 +7,16 @@ using System.Threading.Tasks;
 
 namespace Sokoban
 {
-    public class GameObject
+    public class GameObject : IRenderingObject
     {
         private string _symbol;
 
         public Position Position { get; set; }
         public string Symbol => _symbol;
+
+        public int X => Position.X;
+
+        public int Y => Position.Y;
 
         public GameObject(Position position, string symbol)
         {
