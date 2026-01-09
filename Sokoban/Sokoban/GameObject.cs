@@ -59,9 +59,9 @@ namespace Sokoban
     {
         public static GameObject Create(GameObjectType type, Position pos) => type switch
         {
-            GameObjectType.Wall => new GameObject(pos, symbol: "#"),
-            GameObjectType.Player => new GameObject(pos, symbol: "P"),
-            GameObjectType.Box => new GameObject(pos, symbol: "@"),
+            GameObjectType.Wall => new GameObject(pos, symbol: Config.Wall),
+            GameObjectType.Player => new GameObject(pos, symbol: Config.Player),
+            GameObjectType.Box => new GameObject(pos, symbol: Config.Box),
             GameObjectType.Goal => new Goal(pos),
             _ => throw new ArgumentException()
         };
