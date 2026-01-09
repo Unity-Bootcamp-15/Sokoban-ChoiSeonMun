@@ -1,4 +1,6 @@
-﻿namespace Sokoban
+﻿using System.Diagnostics;
+
+namespace Sokoban
 {
     internal class Program
     {
@@ -45,7 +47,6 @@
                 GameObjectFactory.Create(GameObjectType.Goal, Position.At(4, 5)),
                 GameObjectFactory.Create(GameObjectType.Goal, Position.At(7, 10)),
             };
-            bool[] isBoxOnGoal = { false, false };
 
             // ------------ 게임 루프 -----------
             while (isGameOver == false)
@@ -63,7 +64,7 @@
                 Console.Clear();
 
                 boxes.ForEach(x => RenderObject(x));
-                RenderObjects(goals, idx => isBoxOnGoal[idx] ? "*" : "O");
+                goals.ForEach(x => RenderObject(x));
                 RenderObject(player);
                 walls.ForEach(x => RenderObject(x));
 
@@ -74,16 +75,6 @@
                 {
                     Console.SetCursorPosition(obj.X, obj.Y);
                     Console.Write(obj.Symbol);
-                }
-
-                // NOTE: 조건부 심볼이 있어 Func를 받는다.
-                void RenderObjects(List<GameObject> objs, Func<int, string> symbolSelector)
-                {
-                    for (int i = 0; i < objs.Count; ++i)
-                    {
-                        Console.SetCursorPosition(objs[i].X, objs[i].Y);
-                        Console.Write(symbolSelector(i));
-                    }
                 }
             }
 
@@ -112,14 +103,21 @@
                 {
                     for (int goalIdx = 0; goalIdx < goals.Count; ++goalIdx)
                     {
-                        GameObject currentGoal = goals[goalIdx];
-                        isBoxOnGoal[goalIdx] = boxes.ExistsAt(currentGoal.Position);
+                        Goal? currentGoal = goals[goalIdx] as Goal;
+                        Debug.Assert(currentGoal != null);
+
+                        currentGoal.HasBox = boxes.ExistsAt(currentGoal.Position);
                     }
                 }
 
                 void CheckGameClear()
                 {
-                    isGameOver = Array.TrueForAll(isBoxOnGoal, elem => elem);
+                    isGameOver = goals.TrueForAll(x =>
+                    {
+                        Goal? goal = x as Goal;
+                        Debug.Assert(goal != null);
+                        return goal.HasBox;
+                    });
                 }
 
                 bool TryMovePlayer(Direction playerDirection)

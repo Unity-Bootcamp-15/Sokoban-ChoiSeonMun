@@ -12,7 +12,7 @@ namespace Sokoban
         private string _symbol;
 
         public Position Position { get; set; }
-        public string Symbol => _symbol;
+        public virtual string Symbol => _symbol;
 
         public int X => Position.X;
 
@@ -62,7 +62,7 @@ namespace Sokoban
             GameObjectType.Wall => new GameObject(pos, symbol: "#"),
             GameObjectType.Player => new GameObject(pos, symbol: "P"),
             GameObjectType.Box => new GameObject(pos, symbol: "@"),
-            GameObjectType.Goal => new GameObject(pos, symbol: "O"),
+            GameObjectType.Goal => new Goal(pos),
             _ => throw new ArgumentException()
         };
     }
