@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace Sokoban
 {
-    public interface IRenderingObject
+    public interface IRenderer
     {
-        int X { get; }
-        int Y { get; }
-        string Symbol { get; }
+        void Clear();
+        void Render();
+        void PrintMessage(string message);
+
+        void Prepare();
     }
 }

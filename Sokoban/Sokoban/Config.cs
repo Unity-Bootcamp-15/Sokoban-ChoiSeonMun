@@ -13,5 +13,6 @@ namespace Sokoban
         public static string Box = "@";
         public static string GoalHasBox = "*";
         public static string GoalHasNoBox = "O";
+        public static string ClearMessage = "축하합니다! 게임을 클리어하셨습니다!";
     }
 }

@@ -50,6 +50,10 @@ namespace Sokoban
 
             IInputHandler inputHandler = new ConsoleInputHandler(); // 인스턴스 생성
 
+            IEnumerable<GameObject> allObject = boxes.Concat(walls).Concat(goals).Append(player);
+            IRenderer renderer = new ConsoleRenderer(allObject);
+            renderer.Prepare();
+
             // ------------ 게임 루프 -----------
             while (isGameOver == false)
             {
@@ -63,21 +67,9 @@ namespace Sokoban
             // ---------------------------------------------------
             void Render()
             {
-                Console.Clear();
+                renderer.Clear();
 
-                boxes.ForEach(x => RenderObject(x));
-                goals.ForEach(x => RenderObject(x));
-                RenderObject(player);
-                walls.ForEach(x => RenderObject(x));
-
-                // ---------------------------------------------------
-
-                // Render하는 코드
-                void RenderObject(IRenderingObject obj)
-                {
-                    Console.SetCursorPosition(obj.X, obj.Y);
-                    Console.Write(obj.Symbol);
-                }
+                renderer.Render();
             }
 
             void ProcessInput() => inputHandler.ProcessInput();
@@ -122,8 +114,8 @@ namespace Sokoban
 
             void ShowClearMessage()
             {
-                Console.Clear();
-                Console.WriteLine("축하합니다! 게임을 클리어하셨습니다!");
+                renderer.Clear();
+                renderer.PrintMessage(Config.ClearMessage);
             }
         }
     }

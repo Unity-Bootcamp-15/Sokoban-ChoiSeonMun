@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sokoban
 {
-    public class GameObject : IRenderingObject
+    public class GameObject
     {
         private readonly string _symbol;
 
