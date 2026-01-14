@@ -9,7 +9,7 @@ namespace Sokoban
 {
     public class GameObject : IRenderingObject
     {
-        private string _symbol;
+        private readonly string _symbol;
 
         public Position Position { get; set; }
         public virtual string Symbol => _symbol;
@@ -18,10 +18,15 @@ namespace Sokoban
 
         public int Y => Position.Y;
 
-        public GameObject(Position position, string symbol)
+        public bool IsMovable { get; init; }
+        public bool CanPushOut { get; init; }
+
+        public GameObject(Position position, string symbol, bool isMovable, bool canPushOut = false)
         {
             Position = position;
             _symbol = symbol;
+            IsMovable = isMovable;
+            CanPushOut = canPushOut;
         }
     }
     
@@ -59,9 +64,9 @@ namespace Sokoban
     {
         public static GameObject Create(GameObjectType type, Position pos) => type switch
         {
-            GameObjectType.Wall => new GameObject(pos, symbol: Config.Wall),
-            GameObjectType.Player => new GameObject(pos, symbol: Config.Player),
-            GameObjectType.Box => new GameObject(pos, symbol: Config.Box),
+            GameObjectType.Wall => new GameObject(pos, symbol: Config.Wall, isMovable: false, canPushOut: false),
+            GameObjectType.Player => new GameObject(pos, symbol: Config.Player, isMovable: true, canPushOut: true),
+            GameObjectType.Box => new GameObject(pos, symbol: Config.Box, isMovable: true),
             GameObjectType.Goal => new Goal(pos),
             _ => throw new ArgumentException()
         };

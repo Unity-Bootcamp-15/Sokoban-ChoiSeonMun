@@ -15,14 +15,9 @@ namespace Sokoban
             Console.CursorVisible = false;
             Console.Clear();
 
-            // 게임 데이터 초기화
-            Map map = new(minSize: Position.At(0, 0), maxSize: Position.At(10, 10));
-            bool isGameOver = false;
 
             // 플레이어 데이터
-            // ㄴ 1. 모든 데이터가 캡슐화 되지 않음.
             GameObject player = GameObjectFactory.Create(GameObjectType.Player, Position.At(5, 10));
-            Direction playerDirection = Direction.None;
 
             // 벽 데이터
             List<GameObject> walls = new()
@@ -47,6 +42,11 @@ namespace Sokoban
                 GameObjectFactory.Create(GameObjectType.Goal, Position.At(4, 5)),
                 GameObjectFactory.Create(GameObjectType.Goal, Position.At(7, 10)),
             };
+
+            // 게임 데이터 초기화
+            IEnumerable<GameObject> obstacles = boxes.Concat(walls).Append(player);
+            Map map = new(minSize: Position.At(0, 0), maxSize: Position.At(10, 10), obstacles);
+            bool isGameOver = false;
 
             // ------------ 게임 루프 -----------
             while (isGameOver == false)
@@ -82,14 +82,20 @@ namespace Sokoban
 
             void Update(ConsoleKeyInfo keyInfo)
             {
-                playerDirection = GetDirectionFrom(keyInfo);
-                if (TryMovePlayer(playerDirection))
+                Direction direction = GetDirectionFrom(keyInfo);
+                if (direction == Direction.None)
+                {
+                    return;
+                }
+
+                if (map.TryMove(player, direction))
                 {
                     UpdateGoalState();
                     CheckGameClear();
                 }
  
                 // ---------------------------------------------------
+
                 Direction GetDirectionFrom(ConsoleKeyInfo keyInfo) => keyInfo.Key switch
                 {
                     ConsoleKey.DownArrow => Direction.Down,
@@ -118,65 +124,6 @@ namespace Sokoban
                         Debug.Assert(goal != null);
                         return goal.HasBox;
                     });
-                }
-
-                bool TryMovePlayer(Direction playerDirection)
-                {
-                    if (playerDirection == Direction.None)
-                    {
-                        return false;
-                    }
-
-                    Position deltaPosition = playerDirection.ToOffset();
-                    Position newPlayerPosition = player.Position + deltaPosition;
-                    if (map.IsOutOfRange(newPlayerPosition))
-                    {
-                        return false;
-                    }
-
-                    // 플레이어와 벽의 충돌 처리
-                    if (walls.ExistsAt(newPlayerPosition))
-                    {
-                        return false;
-                    }
-
-                    // 플레이어와 박스의 충돌 처리
-                    // 1. 플레이어가 어떤 박스와 충돌했는지 찾는다.
-                    const int NoCollidedBox = -1;
-                    // 플레이어의 위치랑 박스랑 충돌했는지?
-                    int collidedBoxIndex = boxes.IndexAt(newPlayerPosition);
-                    if (collidedBoxIndex != NoCollidedBox)
-                    {
-                        // 2-1. 박스의 새로운 좌표를 구한다.
-                        GameObject currentBox = boxes[collidedBoxIndex];
-                        Position currentBoxPosition = currentBox.Position;
-                        Position boxDeltaPosition = playerDirection.ToOffset();
-                        Position newBoxPosition = currentBoxPosition + boxDeltaPosition;
-                        if (map.IsOutOfRange(newBoxPosition))
-                        {
-                            return false;
-                        }
-
-                        // 2-2. 벽과의 충돌 처리
-                        if (walls.ExistsAt(newBoxPosition))
-                        {
-                            return false;
-                        }
-
-                        // 2-3. 박스끼리의 충돌 처리
-                        if (boxes.ExistsAt(newBoxPosition, collidedBoxIndex))
-                        {
-                            return false;
-                        }
-
-                        // 2-4. 박스의 좌표를 갱신한다.
-                        currentBox.Position = newBoxPosition;
-                    }
-
-                    // 플레이어의 좌표를 갱신한다.
-                    player.Position = newPlayerPosition;
-
-                    return true;
                 }
             }
 

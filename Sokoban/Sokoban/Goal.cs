@@ -12,7 +12,7 @@ namespace Sokoban
         public override string Symbol => HasBox ? Config.GoalHasBox : Config.GoalHasNoBox;
 
         public Goal(Position pos)
-            : base(pos, Config.GoalHasNoBox)
+            : base(pos, Config.GoalHasNoBox, isMovable: false)
         {
             HasBox = false;
         }
