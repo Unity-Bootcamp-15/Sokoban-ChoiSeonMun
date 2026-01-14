@@ -4,119 +4,39 @@ namespace Sokoban
 {
     internal class Program
     {
+
         static void Main(string[] args)
         {
-            // ----------- 초기화 -------------
-            // 콘솔 창 초기화
-            Console.ResetColor();
-            Console.BackgroundColor = ConsoleColor.DarkCyan;
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.Title = "My Sokoban";
-            Console.CursorVisible = false;
-            Console.Clear();
-
-
-            // 플레이어 데이터
-            GameObject player = GameObjectFactory.Create(GameObjectType.Player, Position.At(5, 10));
-
-            // 벽 데이터
-            List<GameObject> walls = new()
+            Level firstLevel = new Level()
             {
-                GameObjectFactory.Create(GameObjectType.Wall, Position.At(3, 3)),
-                GameObjectFactory.Create(GameObjectType.Wall, Position.At(4, 3)),
-                GameObjectFactory.Create(GameObjectType.Wall, Position.At(5, 3)),
-                GameObjectFactory.Create(GameObjectType.Wall, Position.At(6, 3)),
-                GameObjectFactory.Create(GameObjectType.Wall, Position.At(7, 3)),
+                Player = GameObjectFactory.Create(GameObjectType.Player, Position.At(5, 10)),
+                Boxes = new List<GameObject>()
+                {
+                    GameObjectFactory.Create(GameObjectType.Box, Position.At(6, 6)),
+                    GameObjectFactory.Create(GameObjectType.Box, Position.At(8, 7)),
+                },
+                Walls = new List<GameObject>()
+                {
+                    GameObjectFactory.Create(GameObjectType.Wall, Position.At(3, 3)),
+                    GameObjectFactory.Create(GameObjectType.Wall, Position.At(4, 3)),
+                    GameObjectFactory.Create(GameObjectType.Wall, Position.At(5, 3)),
+                    GameObjectFactory.Create(GameObjectType.Wall, Position.At(6, 3)),
+                    GameObjectFactory.Create(GameObjectType.Wall, Position.At(7, 3)),
+                },
+                Goals = new List<GameObject>()
+                {
+                    GameObjectFactory.Create(GameObjectType.Goal, Position.At(4, 5)),
+                    GameObjectFactory.Create(GameObjectType.Goal, Position.At(7, 10)),
+                }
             };
-            
-            // 박스 데이터
-            List<GameObject> boxes = new()
-            {
-                GameObjectFactory.Create(GameObjectType.Box, Position.At(6, 6)),
-                GameObjectFactory.Create(GameObjectType.Box, Position.At(8, 7)),
-            };
+            firstLevel.Map = new(minSize: Position.At(0, 0), maxSize: Position.At(10, 10), firstLevel.Obstacles);
 
-            // 골 데이터
-            List<GameObject> goals = new()
-            {
-                GameObjectFactory.Create(GameObjectType.Goal, Position.At(4, 5)),
-                GameObjectFactory.Create(GameObjectType.Goal, Position.At(7, 10)),
-            };
-
-            // 게임 데이터 초기화
-            IEnumerable<GameObject> obstacles = boxes.Concat(walls).Append(player);
-            Map map = new(minSize: Position.At(0, 0), maxSize: Position.At(10, 10), obstacles);
-            bool isGameOver = false;
-
-            IInputHandler inputHandler = new ConsoleInputHandler(); // 인스턴스 생성
-
-            IEnumerable<GameObject> allObject = boxes.Concat(walls).Concat(goals).Append(player);
-            IRenderer renderer = new ConsoleRenderer(allObject);
+            IInputHandler inputHandler = new ConsoleInputHandler();
+            IRenderer renderer = new ConsoleRenderer(firstLevel.AllObject);
             renderer.Prepare();
 
-            // ------------ 게임 루프 -----------
-            while (isGameOver == false)
-            {
-                Render();
-                ProcessInput();
-                Update();
-            }
-
-            ShowClearMessage();
-
-            // ---------------------------------------------------
-            void Render()
-            {
-                renderer.Clear();
-
-                renderer.Render();
-            }
-
-            void ProcessInput() => inputHandler.ProcessInput();
-
-            void Update()
-            {
-                Direction direction = inputHandler.GetDirection();
-                if (direction == Direction.None)
-                {
-                    return;
-                }
-
-                if (map.TryMove(player, direction))
-                {
-                    UpdateGoalState();
-                    CheckGameClear();
-                }
- 
-                // ---------------------------------------------------
-
-                void UpdateGoalState()
-                {
-                    for (int goalIdx = 0; goalIdx < goals.Count; ++goalIdx)
-                    {
-                        Goal? currentGoal = goals[goalIdx] as Goal;
-                        Debug.Assert(currentGoal != null);
-
-                        currentGoal.HasBox = boxes.ExistsAt(currentGoal.Position);
-                    }
-                }
-
-                void CheckGameClear()
-                {
-                    isGameOver = goals.TrueForAll(x =>
-                    {
-                        Goal? goal = x as Goal;
-                        Debug.Assert(goal != null);
-                        return goal.HasBox;
-                    });
-                }
-            }
-
-            void ShowClearMessage()
-            {
-                renderer.Clear();
-                renderer.PrintMessage(Config.ClearMessage);
-            }
+            Game game = new Game(inputHandler, renderer, firstLevel);
+            game.Run();
         }
     }
 }
