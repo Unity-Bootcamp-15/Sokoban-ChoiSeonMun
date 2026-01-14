@@ -48,12 +48,14 @@ namespace Sokoban
             Map map = new(minSize: Position.At(0, 0), maxSize: Position.At(10, 10), obstacles);
             bool isGameOver = false;
 
+            IInputHandler inputHandler = new ConsoleInputHandler(); // 인스턴스 생성
+
             // ------------ 게임 루프 -----------
             while (isGameOver == false)
             {
                 Render();
-                ConsoleKeyInfo keyInfo = ProcessInput();
-                Update(keyInfo);
+                ProcessInput();
+                Update();
             }
 
             ShowClearMessage();
@@ -78,11 +80,11 @@ namespace Sokoban
                 }
             }
 
-            ConsoleKeyInfo ProcessInput() => Console.ReadKey();
+            void ProcessInput() => inputHandler.ProcessInput();
 
-            void Update(ConsoleKeyInfo keyInfo)
+            void Update()
             {
-                Direction direction = GetDirectionFrom(keyInfo);
+                Direction direction = inputHandler.GetDirection();
                 if (direction == Direction.None)
                 {
                     return;
@@ -95,15 +97,6 @@ namespace Sokoban
                 }
  
                 // ---------------------------------------------------
-
-                Direction GetDirectionFrom(ConsoleKeyInfo keyInfo) => keyInfo.Key switch
-                {
-                    ConsoleKey.DownArrow => Direction.Down,
-                    ConsoleKey.UpArrow => Direction.Up,
-                    ConsoleKey.LeftArrow => Direction.Left,
-                    ConsoleKey.RightArrow => Direction.Right,
-                    _ => Direction.None
-                };
 
                 void UpdateGoalState()
                 {
