@@ -12,14 +12,12 @@ namespace Sokoban
     // 
     public class Map
     {
-        private Position _minSize;
-        private Position _maxSize;
+        private Size _size;
         private IEnumerable<GameObject> _obstacles;
 
-        public Map(Position minSize, Position maxSize, IEnumerable<GameObject> obstacles)
+        public Map(Size size, IEnumerable<GameObject> obstacles)
         {
-            _minSize = minSize;
-            _maxSize = maxSize;
+            _size = size;
             _obstacles = obstacles;
         }
 
@@ -63,8 +61,8 @@ namespace Sokoban
 
         private bool IsOutOfRange(Position pos)
         {
-            bool isOutOfRangeX = pos.X < _minSize.X || pos.X > _maxSize.X;
-            bool isOutOfRangeY = pos.Y < _minSize.Y || pos.Y > _maxSize.Y;
+            bool isOutOfRangeX = pos.X < 0 || pos.X > _size.Width;
+            bool isOutOfRangeY = pos.Y < 0 || pos.Y > _size.Height;
 
             return isOutOfRangeX || isOutOfRangeY;
         }

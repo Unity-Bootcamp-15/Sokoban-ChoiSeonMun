@@ -58,7 +58,7 @@ namespace Sokoban
                     GameObjectFactory.Create(GameObjectType.Goal, Position.At(7, 10)),
                 }
             };
-            level.Map = new(minSize: Position.At(0, 0), maxSize: Position.At(10, 10), level.Obstacles);
+            level.Map = new(new Size(10, 10), level.Obstacles);
 
             return level;
         }
