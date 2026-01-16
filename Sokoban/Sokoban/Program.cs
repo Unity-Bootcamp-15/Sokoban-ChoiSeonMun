@@ -4,10 +4,10 @@ namespace Sokoban
 {
     internal class Program
     {
-
         static void Main(string[] args)
         {
-            Level firstLevel = Level.CreateFirst();
+            LevelData levelData = LevelLoader.ReadLevel("Level1.txt");
+            Level firstLevel = new Level(levelData);
             IInputHandler inputHandler = new ConsoleInputHandler();
             IRenderer renderer = new ConsoleRenderer(firstLevel.AllObject);
             renderer.Prepare();
