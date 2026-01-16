@@ -8,13 +8,6 @@ namespace Sokoban
 {
     public class ConsoleRenderer : IRenderer
     {
-        private IEnumerable<GameObject> _allObject;
-
-        public ConsoleRenderer(IEnumerable<GameObject> allObject)
-        {
-            _allObject = allObject;
-        }
-
         public void Clear()
         {
             Console.Clear();
@@ -35,9 +28,9 @@ namespace Sokoban
             Console.WriteLine(message);
         }
 
-        public void Render()
+        public void Render(IEnumerable<GameObject> allObjects)
         {
-            foreach (GameObject obj in _allObject)
+            foreach (GameObject obj in allObjects)
             {
                 Console.SetCursorPosition(obj.X, obj.Y);
                 Console.Write(obj.Symbol);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,11 +9,25 @@ namespace Sokoban
 {
     public static class LevelLoader
     {
-        public static LevelData ReadLevel(string path)
+        public static IEnumerable<LevelData> ReadAllLevel()
         {
-            LevelData levelData = new();
+            List<LevelData> levelDatas = new();
+            for (int level = Config.MinLevel; level <= Config.MaxLevel; level++)
+            {
+                levelDatas.Add(ReadLevel(level));
+            }
 
-            string[] content = File.ReadAllLines(path);
+            return levelDatas;
+        }
+
+        private static LevelData ReadLevel(int level)
+        {
+            const string kLevelPath = $"Level";
+
+            Debug.Assert(Config.MinLevel <= level && level <= Config.MaxLevel);
+            
+            LevelData levelData = new();
+            string[] content = File.ReadAllLines($"{kLevelPath}{level}.txt");
             
             int width = 0;
             int height = content.Length;

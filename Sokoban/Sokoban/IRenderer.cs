@@ -9,7 +9,7 @@ namespace Sokoban
     public interface IRenderer
     {
         void Clear();
-        void Render();
+        void Render(IEnumerable<GameObject> allObjects);
         void PrintMessage(string message);
 
         void Prepare();

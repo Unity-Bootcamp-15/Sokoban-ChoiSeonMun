@@ -12,33 +12,39 @@ namespace Sokoban
     {
         private IInputHandler _inputHandler;
         private IRenderer _renderer;
-        private Level _level;
+        private IEnumerable<Level> _levels;
         private bool _isGameOver = false;
 
-        public Game(IInputHandler inputHandler, IRenderer renderer, Level level)
+        public Game(IInputHandler inputHandler, IRenderer renderer, IEnumerable<Level> levels)
         {
             _inputHandler = inputHandler;
             _renderer = renderer;
-            _level = level;
+            _levels = levels;
         }
 
         public void Run()
         {
-            while (_isGameOver == false)
+            foreach (Level currentLevel in _levels)
             {
-                Render();
-                ProcessInput();
-                Update();
-            }
+                while (_isGameOver == false)
+                {
+                    Render(currentLevel);
+                    ProcessInput();
+                    Update(currentLevel);
+                }
 
+                ShowNoticeToGoToNextLevel();
+                ChangeNextLevel();
+            }
+            
             ShowClearMessage();
 
             // ---------------------------------------------------
-            void Render()
+            void Render(Level level)
             {
                 _renderer.Clear();
 
-                _renderer.Render();
+                _renderer.Render(level.AllObject);
             }
 
             void ProcessInput() => _inputHandler.ProcessInput();
@@ -49,7 +55,21 @@ namespace Sokoban
                 _renderer.PrintMessage(Config.ClearMessage);
             }
 
-            void Update()
+            void ShowNoticeToGoToNextLevel()
+            {
+                _renderer.Clear();
+                _renderer.PrintMessage(Config.NextLevelNoticeMessage);
+            }
+
+            void ChangeNextLevel()
+            {
+                _isGameOver = false;
+
+                // NOTE: 사용자로부터 입력을 받은 후에 다음 레벨로 넘어간다.
+                _inputHandler.ProcessInput();
+            }
+
+            void Update(Level level)
             {
                 Direction direction = _inputHandler.GetDirection();
                 if (direction == Direction.None)
@@ -57,10 +77,10 @@ namespace Sokoban
                     return;
                 }
 
-                if (_level.TryMovePlayer(direction))
+                if (level.TryMovePlayer(direction))
                 {
-                    _level.UpdateGoalState();
-                    _isGameOver = _level.CheckClear();
+                    level.UpdateGoalState();
+                    _isGameOver = level.CheckClear();
                 }
             }
         }
